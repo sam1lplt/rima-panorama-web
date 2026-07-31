@@ -147,19 +147,34 @@ export default function LifePromise() {
             );
           }
 
-          // ── Intro text entrance ────────────────────────────────────────────────
+          // ── Intro text entrance animation with line mask reveal ─────────────────────
+          const introTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: container,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          });
+
           if (introEyebrowRef.current) {
-            gsap.fromTo(
+            introTl.fromTo(
               introEyebrowRef.current,
               { opacity: 0, y: 20 },
               { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
             );
           }
-          if (introHeadlineRef.current) {
-            gsap.fromTo(
-              introHeadlineRef.current,
-              { opacity: 0, y: 30 },
-              { opacity: 1, y: 0, duration: 0.9, delay: 0.2, ease: "power3.out" }
+
+          const introLines = container.querySelectorAll(".intro-line-inner");
+          if (introLines.length > 0) {
+            introTl.to(
+              introLines,
+              {
+                y: "0%",
+                duration: 0.9,
+                stagger: 0.12,
+                ease: "power4.out",
+              },
+              "-=0.5"
             );
           }
 
@@ -209,6 +224,21 @@ export default function LifePromise() {
 
       // ─── MOBILE VERTICAL STACK ─────────────────────────────────────────────────
       mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
+        const mobileIntroLines = containerRef.current?.querySelectorAll(".mobile-intro-line-inner");
+        if (mobileIntroLines && mobileIntroLines.length > 0) {
+          gsap.to(mobileIntroLines, {
+            y: "0%",
+            duration: 0.9,
+            stagger: 0.12,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        }
+
         mobileCardRefs.current.forEach((card) => {
           if (!card) return;
           gsap.fromTo(
@@ -277,12 +307,18 @@ export default function LifePromise() {
               </div>
               <h2
                 ref={introHeadlineRef}
-                className="font-switzer font-light text-5xl lg:text-7xl text-[#1F3A5F] leading-[1.1] max-w-3xl"
+                className="font-switzer font-light text-5xl lg:text-7xl text-[#1F3A5F] leading-[1.12] max-w-4xl"
               >
-                Siz Keyfini Çıkarın,{" "}
-                <span className="italic font-serif text-[#1F3A5F]/75">
-                  Detayları Biz Düşündük
-                </span>
+                <div className="overflow-hidden block py-0.5">
+                  <span className="intro-line-inner block transform-gpu translate-y-[110%] font-switzer font-light will-change-transform">
+                    Siz Keyfini Çıkarın,
+                  </span>
+                </div>
+                <div className="overflow-hidden block py-0.5">
+                  <span className="intro-line-inner block transform-gpu translate-y-[110%] italic font-serif text-[#1F3A5F]/85 will-change-transform">
+                    Detayları Biz Düşündük
+                  </span>
+                </div>
               </h2>
             </div>
 
@@ -384,8 +420,16 @@ export default function LifePromise() {
             </span>
           </div>
           <h2 className="font-switzer font-light text-3xl sm:text-4xl text-[#1F3A5F] leading-tight">
-            Siz Keyfini Çıkarın,{" "}
-            <span className="italic font-serif text-[#1F3A5F]/75">Detayları Biz Düşündük</span>
+            <div className="overflow-hidden block py-0.5">
+              <span className="mobile-intro-line-inner block transform-gpu translate-y-[110%] font-switzer font-light will-change-transform">
+                Siz Keyfini Çıkarın,
+              </span>
+            </div>
+            <div className="overflow-hidden block py-0.5">
+              <span className="mobile-intro-line-inner block transform-gpu translate-y-[110%] italic font-serif text-[#1F3A5F]/85 will-change-transform">
+                Detayları Biz Düşündük
+              </span>
+            </div>
           </h2>
         </div>
 
