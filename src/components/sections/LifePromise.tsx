@@ -11,9 +11,9 @@ if (typeof window !== "undefined") {
 }
 
 // NAMED CONSTANTS — tune these freely to adjust timing and speeds
-const SCRUB_SMOOTHNESS = 1;            // Lag (s) on scroll→horizontal motion (scrub: 1 for smooth easing)
+const SCRUB_SMOOTHNESS = 1;            // 1s lag for smooth 60fps interpolation
 const INTRO_HOLD_DISTANCE = 2000;      // Vertical scroll distance (px) the intro stays pinned before horizontal movement starts
-const DESKTOP_PIN_SCROLL_DISTANCE = 1400; // Total vertical scroll distance (px) for horizontal translation itself (comfortable glide speed)
+const DESKTOP_PIN_SCROLL_DISTANCE = 1400; // Total vertical scroll distance (px) for horizontal translation itself
 
 interface LifePanelData {
   id: number;
@@ -97,7 +97,7 @@ export default function LifePromise() {
     () => {
       const mm = gsap.matchMedia();
 
-      // ─── DESKTOP: horizontal scroll with intro hold ─────────────────────────────
+      // ─── DESKTOP: GPU-accelerated horizontal scroll with intro hold ─────────────
       mm.add(
         "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
         () => {
@@ -105,11 +105,12 @@ export default function LifePromise() {
           const container = containerRef.current;
           if (!track || !container) return;
 
-          gsap.set(track, { x: 0 });
+          // Force 3D transform matrix on track to promote GPU compositor layer
+          gsap.set(track, { x: 0, force3D: true });
 
           const getScrollAmount = () => -(track.scrollWidth - window.innerWidth);
 
-          // ── GSAP Timeline: pin the section and scrub track horizontally ────────
+          // ── Master Pin & Smooth Horizontal Track Scrub Timeline ────────────────
           const mainTl = gsap.timeline({
             scrollTrigger: {
               trigger: container,
@@ -125,11 +126,12 @@ export default function LifePromise() {
           // Phase 1: Hold the intro static on screen
           mainTl.to({}, { duration: INTRO_HOLD_DISTANCE });
 
-          // Phase 2: Translate the track horizontally
+          // Phase 2: Translate the track horizontally using translate3d (GPU accelerated)
           mainTl.to(track, {
             x: getScrollAmount,
             ease: "none",
-            duration: DESKTOP_PIN_SCROLL_DISTANCE
+            duration: DESKTOP_PIN_SCROLL_DISTANCE,
+            force3D: true,
           });
 
           // Sync progress bar only during horizontal translation
@@ -147,39 +149,26 @@ export default function LifePromise() {
 
           // ── Intro text entrance ────────────────────────────────────────────────
           if (introEyebrowRef.current) {
-            gsap.fromTo(introEyebrowRef.current,
+            gsap.fromTo(
+              introEyebrowRef.current,
               { opacity: 0, y: 20 },
               { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
             );
           }
           if (introHeadlineRef.current) {
-            gsap.fromTo(introHeadlineRef.current,
+            gsap.fromTo(
+              introHeadlineRef.current,
               { opacity: 0, y: 30 },
               { opacity: 1, y: 0, duration: 0.9, delay: 0.2, ease: "power3.out" }
             );
           }
 
-          // ── Per-panel Ken Burns + text reveals (containerAnimation = mainTl) ──
+          // ── Per-panel lightweight GPU reveals ──────────────────────────────────
           panelRefs.current.forEach((panel, idx) => {
             if (!panel) return;
-            const imgContainer = panelImgRefs.current[idx];
             const numEl = panelNumberRefs.current[idx];
             const wordEl = panelWordRefs.current[idx];
             const sentenceEl = panelSentenceRefs.current[idx];
-
-            if (imgContainer) {
-              gsap.fromTo(imgContainer, { scale: 1 }, {
-                scale: 1.1,
-                ease: "none",
-                scrollTrigger: {
-                  trigger: panel,
-                  containerAnimation: mainTl,
-                  start: "left right",
-                  end: "right left",
-                  scrub: true,
-                },
-              });
-            }
 
             const revealTl = gsap.timeline({
               scrollTrigger: {
@@ -192,23 +181,26 @@ export default function LifePromise() {
             });
 
             if (numEl) {
-              revealTl.fromTo(numEl,
+              revealTl.fromTo(
+                numEl,
                 { opacity: 0, y: 20 },
                 { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }
               );
             }
             if (wordEl) {
-              revealTl.fromTo(wordEl,
-                { opacity: 0, y: 35, clipPath: "inset(100% 0 0 0)" },
-                { opacity: 1, y: 0, clipPath: "inset(0% 0 0 0)", duration: 0.7, ease: "power3.out" },
+              revealTl.fromTo(
+                wordEl,
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
                 "-=0.3"
               );
             }
             if (sentenceEl) {
-              revealTl.fromTo(sentenceEl,
+              revealTl.fromTo(
+                sentenceEl,
                 { opacity: 0, y: 20 },
-                { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
-                "-=0.4"
+                { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+                "-=0.3"
               );
             }
           });
@@ -219,11 +211,20 @@ export default function LifePromise() {
       mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
         mobileCardRefs.current.forEach((card) => {
           if (!card) return;
-          gsap.fromTo(card,
-            { opacity: 0, y: 50, scale: 0.95 },
+          gsap.fromTo(
+            card,
+            { opacity: 0, y: 40, scale: 0.96 },
             {
-              opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out",
-              scrollTrigger: { trigger: card, start: "top 85%", toggleActions: "play none none reverse" },
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: card,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
             }
           );
         });
@@ -260,11 +261,11 @@ export default function LifePromise() {
           </span>
         </div>
 
-        {/* Scrolling track — each panel is exactly 100vw wide */}
+        {/* Scrolling track — GPU accelerated compositor layer */}
         <div className="relative w-full flex-1 overflow-hidden flex items-center">
           <div
             ref={trackRef}
-            className="flex h-[80vh] w-max items-stretch will-change-transform"
+            className="flex h-[80vh] w-max items-stretch transform-gpu will-change-transform [backface-visibility:hidden] [transform:translateZ(0)]"
           >
             {/* Panel 0: Intro (100vw) */}
             <div className="w-screen h-full flex-shrink-0 flex flex-col justify-center px-16 lg:px-28">
@@ -293,35 +294,42 @@ export default function LifePromise() {
               return (
                 <div
                   key={panel.id}
-                  ref={(el) => { panelRefs.current[idx] = el; }}
+                  ref={(el) => {
+                    panelRefs.current[idx] = el;
+                  }}
                   className="w-screen h-full flex-shrink-0 px-6 lg:px-10 py-2"
                 >
-                  <div className="relative w-full h-full rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl border border-[#1F3A5F]/10 bg-black/40">
-                    {/* Ken Burns wrapper */}
+                  <div className="relative w-full h-full rounded-2xl lg:rounded-3xl overflow-hidden bg-black/40 border border-[#1F3A5F]/10 group">
+                    {/* GPU transform wrapper */}
                     <div
-                      ref={(el) => { panelImgRefs.current[idx] = el; }}
-                      className="absolute inset-0 w-full h-full z-0 transform-gpu will-change-transform"
+                      ref={(el) => {
+                        panelImgRefs.current[idx] = el;
+                      }}
+                      className="absolute inset-0 w-full h-full z-0 transform-gpu will-change-transform transition-transform duration-700 ease-out group-hover:scale-105"
                     >
                       <Image
                         src={imgSrc}
                         alt={panel.word}
                         fill
-                        sizes="100vw"
-                        quality={90}
+                        sizes="(max-width: 768px) 100vw, 90vw"
+                        quality={80}
+                        loading="lazy"
                         onLoad={handleImageLoad}
                         onError={() => handleImageError(panel.id)}
                         className="object-cover object-center brightness-[0.85]"
                       />
                       <div
-                        className="absolute inset-0 z-10 bg-gradient-to-t from-[#1F3A5F] via-[#1F3A5F]/60 to-transparent"
+                        className="absolute inset-0 z-10 bg-gradient-to-t from-[#1F3A5F] via-[#1F3A5F]/60 to-transparent pointer-events-none"
                         aria-hidden="true"
                       />
                     </div>
 
                     {/* Text overlay */}
-                    <div className="relative z-20 h-full w-full p-10 lg:p-16 flex flex-col justify-end">
+                    <div className="relative z-20 h-full w-full p-10 lg:p-16 flex flex-col justify-end pointer-events-none">
                       <div
-                        ref={(el) => { panelNumberRefs.current[idx] = el; }}
+                        ref={(el) => {
+                          panelNumberRefs.current[idx] = el;
+                        }}
                         className="flex items-center gap-3 mb-2"
                       >
                         <span className="text-gold font-mono font-semibold tracking-widest text-sm">
@@ -331,15 +339,19 @@ export default function LifePromise() {
                       </div>
 
                       <h3
-                        ref={(el) => { panelWordRefs.current[idx] = el; }}
-                        className="font-switzer font-light text-4xl lg:text-7xl uppercase tracking-[0.04em] text-white drop-shadow-lg mb-4"
+                        ref={(el) => {
+                          panelWordRefs.current[idx] = el;
+                        }}
+                        className="font-switzer font-light text-4xl lg:text-7xl uppercase tracking-[0.04em] text-white drop-shadow-md mb-4"
                       >
                         {panel.word}
                       </h3>
 
                       <p
-                        ref={(el) => { panelSentenceRefs.current[idx] = el; }}
-                        className="font-switzer font-light text-base lg:text-xl text-cream/90 leading-relaxed max-w-2xl drop-shadow"
+                        ref={(el) => {
+                          panelSentenceRefs.current[idx] = el;
+                        }}
+                        className="font-switzer font-light text-base lg:text-xl text-cream/90 leading-relaxed max-w-2xl drop-shadow-sm"
                       >
                         {panel.sentence}
                       </p>
@@ -385,8 +397,10 @@ export default function LifePromise() {
             return (
               <div
                 key={panel.id}
-                ref={(el) => { mobileCardRefs.current[idx] = el; }}
-                className="relative w-full aspect-[4/5] min-h-[420px] rounded-2xl overflow-hidden bg-black/40 shadow-xl border border-[#1F3A5F]/10 flex flex-col justify-end p-6"
+                ref={(el) => {
+                  mobileCardRefs.current[idx] = el;
+                }}
+                className="relative w-full aspect-[4/5] min-h-[420px] rounded-2xl overflow-hidden bg-black/40 border border-[#1F3A5F]/10 flex flex-col justify-end p-6"
               >
                 <div className="absolute inset-0 w-full h-full z-0">
                   <Image
@@ -394,7 +408,7 @@ export default function LifePromise() {
                     alt={panel.word}
                     fill
                     sizes="100vw"
-                    quality={85}
+                    quality={80}
                     onError={() => handleImageError(panel.id)}
                     className="object-cover object-center brightness-[0.85]"
                   />
