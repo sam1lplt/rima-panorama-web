@@ -12,8 +12,8 @@ if (typeof window !== "undefined") {
 
 // NAMED CONSTANTS — tune these freely to adjust timing and speeds
 const SCRUB_SMOOTHNESS = 1;            // 1s lag for smooth 60fps interpolation
-const INTRO_HOLD_DISTANCE = 2000;      // Vertical scroll distance (px) the intro stays pinned before horizontal movement starts
-const DESKTOP_PIN_SCROLL_DISTANCE = 1000; // Total vertical scroll distance (px) for horizontal translation itself
+const INTRO_HOLD_DISTANCE = 500;       // Vertical scroll distance (px) intro stays pinned before panel sliding starts (reduced from 2000px)
+const DESKTOP_PIN_SCROLL_DISTANCE = 800; // Total vertical scroll distance (px) for panel translation track
 
 interface LifePanelData {
   id: number;
