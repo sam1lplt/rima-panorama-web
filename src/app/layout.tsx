@@ -17,9 +17,8 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "Rima Panorama | Karataş Adana'da Satılık Deniz Manzaralı Daireler",
-  description:
-    "Karataş, Adana'da denizle başlayan büyüleyici bir yaşam. Havuzlu, modern mimariye sahip lüks sahil konut projesi Rima Panorama.",
+  title: "Rima Panorama- Karataş",
+  description: "Karataş'ta Eşsiz Bir Yaşam Sizleri Bekliyor...",
   keywords: [
     "Rima Panorama",
     "Karataş satılık daire",
