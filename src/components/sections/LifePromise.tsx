@@ -13,7 +13,7 @@ if (typeof window !== "undefined") {
 // NAMED CONSTANTS — tune these freely to adjust timing and speeds
 const SCRUB_SMOOTHNESS = 1;            // Lag (s) on scroll→horizontal motion (scrub: 1 for smooth easing)
 const INTRO_HOLD_DISTANCE = 2000;      // Vertical scroll distance (px) the intro stays pinned before horizontal movement starts
-const DESKTOP_PIN_SCROLL_DISTANCE = 800; // Total vertical scroll distance (px) for horizontal translation itself (halved again)
+const DESKTOP_PIN_SCROLL_DISTANCE = 1400; // Total vertical scroll distance (px) for horizontal translation itself (comfortable glide speed)
 
 interface LifePanelData {
   id: number;
