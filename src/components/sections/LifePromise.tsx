@@ -13,7 +13,7 @@ if (typeof window !== "undefined") {
 // NAMED CONSTANTS — tune these freely to adjust timing and speeds
 const SCRUB_SMOOTHNESS = 1;            // 1s lag for smooth 60fps interpolation
 const INTRO_HOLD_DISTANCE = 2000;      // Vertical scroll distance (px) the intro stays pinned before horizontal movement starts
-const DESKTOP_PIN_SCROLL_DISTANCE = 1400; // Total vertical scroll distance (px) for horizontal translation itself
+const DESKTOP_PIN_SCROLL_DISTANCE = 1000; // Total vertical scroll distance (px) for horizontal translation itself
 
 interface LifePanelData {
   id: number;
@@ -311,8 +311,8 @@ export default function LifePromise() {
                         src={imgSrc}
                         alt={panel.word}
                         fill
-                        sizes="(max-width: 768px) 100vw, 90vw"
-                        quality={80}
+                        sizes="(max-width: 768px) 100vw, 80vw"
+                        quality={75}
                         loading="lazy"
                         onLoad={handleImageLoad}
                         onError={() => handleImageError(panel.id)}
