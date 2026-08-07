@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import {
   APARTMENT_CATEGORIES,
   APARTMENT_TYPES,
   ApartmentCategory,
   ApartmentType,
-  NetRoom,
 } from "@/content/apartmentTypes";
 
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 export default function ApartmentTypes() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const cardsGridRef = useRef<HTMLDivElement>(null);
+
   const [activeCategory, setActiveCategory] =
     useState<ApartmentCategory>("1+1");
   const [selectedApartment, setSelectedApartment] =
@@ -63,48 +72,123 @@ export default function ApartmentTypes() {
     return total.toFixed(2) + " m²";
   };
 
-  // Helper: Find index of largest room in netRooms for editorial focal point
-  const getLargestRoomIndex = (rooms: NetRoom[]): number => {
-    let maxVal = -1;
-    let maxIdx = 0;
-    rooms.forEach((room, idx) => {
-      const val = parseFloat(room.area.replace(" m²", "").replace(",", "."));
-      if (!isNaN(val) && val > maxVal) {
-        maxVal = val;
-        maxIdx = idx;
+  // GSAP Entrance Reveal Animation (matching homepage standard)
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      if (prefersReducedMotion) return;
+
+      const eyebrow = sectionRef.current.querySelector(".apt-eyebrow");
+      const headlineLine = sectionRef.current.querySelector(".apt-headline-inner");
+      const subhead = sectionRef.current.querySelector(".apt-subhead");
+      const tabBar = sectionRef.current.querySelector(".apt-tab-bar");
+      const cards = cardsGridRef.current?.children;
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      if (eyebrow) {
+        tl.fromTo(
+          eyebrow,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+        );
       }
-    });
-    return maxIdx;
-  };
+
+      if (headlineLine) {
+        tl.fromTo(
+          headlineLine,
+          { y: "110%" },
+          { y: "0%", duration: 0.9, ease: "power4.out" },
+          "-=0.4"
+        );
+      }
+
+      if (subhead) {
+        tl.fromTo(
+          subhead,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+          "-=0.5"
+        );
+      }
+
+      if (tabBar) {
+        tl.fromTo(
+          tabBar,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+          "-=0.4"
+        );
+      }
+
+      if (cards && cards.length > 0) {
+        tl.fromTo(
+          cards,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power3.out" },
+          "-=0.3"
+        );
+      }
+    },
+    { scope: sectionRef }
+  );
+
+  // Re-trigger card entrance animation when changing tabs
+  useEffect(() => {
+    if (!cardsGridRef.current) return;
+    const cards = cardsGridRef.current.children;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion || !cards || cards.length === 0) return;
+
+    gsap.fromTo(
+      cards,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.06, ease: "power2.out" }
+    );
+  }, [activeCategory]);
 
   return (
-    <section className="w-full bg-cream px-4 sm:px-8 md:px-12 pt-20 pb-16 select-none">
+    <section
+      ref={sectionRef}
+      className="w-full bg-cream px-4 sm:px-8 md:px-12 pt-20 pb-16 select-none"
+    >
       <div className="max-w-7xl w-full mx-auto">
         {/* ─── EDITORIAL MAGAZINE SECTION HEADER ──────────────────────── */}
         <div className="flex flex-col gap-3.5 mb-14 max-w-2xl text-left">
-          {/* Quiet minimal label */}
-          <span className="font-switzer font-medium text-xs tracking-[0.25em] uppercase text-gold">
-            DAİRE TİPLERİ
-          </span>
+          {/* Eyebrow Label */}
+          <div className="apt-eyebrow opacity-0">
+            <span className="font-switzer font-medium text-xs tracking-[0.25em] uppercase text-gold">
+              DAİRE TİPLERİ
+            </span>
+          </div>
 
-          {/* Confident Large Headline with Flamingo Accent */}
-          <h2 className="font-switzer font-light text-4xl sm:text-5xl md:text-6xl text-navy leading-[1.1] tracking-tight">
-            Size Uygun{" "}
-            <span className="relative inline-block font-normal">
-              Daireyi
-              <span className="absolute bottom-1.5 left-0 right-0 h-[3px] bg-[#E8836F]" />
-            </span>{" "}
-            Bulun
+          {/* Mask-Revealed Headline */}
+          <h2 className="font-switzer font-light text-4xl sm:text-5xl md:text-6xl text-navy leading-[1.1] tracking-tight overflow-hidden py-1">
+            <span className="apt-headline-inner block transform-gpu will-change-transform">
+              Size Uygun Daireyi Bulun
+            </span>
           </h2>
 
           {/* Connected Subhead */}
-          <p className="font-switzer font-light text-sm sm:text-base text-navy/60 leading-relaxed mt-1">
+          <p className="apt-subhead opacity-0 font-switzer font-light text-sm sm:text-base text-navy/60 leading-relaxed mt-1">
             Kat planlarını, metrekarelerini ve alan dağılımlarını inceleyin.
           </p>
         </div>
 
         {/* ─── FLAT ARCHITECTURAL TAB BAR ─────────────────────────────── */}
-        <div className="flex items-center gap-6 sm:gap-10 border-b border-navy/15 mb-10 overflow-x-auto no-scrollbar">
+        <div className="apt-tab-bar opacity-0 flex items-center gap-6 sm:gap-10 border-b border-navy/15 mb-10 overflow-x-auto no-scrollbar">
           {APARTMENT_CATEGORIES.map((category) => {
             const isActive = activeCategory === category;
             return (
@@ -128,7 +212,10 @@ export default function ApartmentTypes() {
         </div>
 
         {/* ─── ARCHITECTURAL SPEC CARDS GRID ───────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+        <div
+          ref={cardsGridRef}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"
+        >
           {filteredTypes.map((apt) => {
             const hasFailedImage = failedImages[apt.id];
 
@@ -136,10 +223,10 @@ export default function ApartmentTypes() {
               <div
                 key={apt.id}
                 onClick={() => setSelectedApartment(apt)}
-                className="group relative rounded-none bg-white border border-navy/15 hover:border-navy/50 transition-all duration-200 hover:-translate-y-0.5 flex flex-col cursor-pointer overflow-hidden shadow-none"
+                className="group relative rounded-none bg-white border border-navy/30 hover:border-navy transition-all duration-200 hover:-translate-y-0.5 flex flex-col cursor-pointer overflow-hidden shadow-xs"
               >
                 {/* Card Top: Flat Light Panel */}
-                <div className="relative w-full aspect-[4/3] bg-[#F7F4EE] border-b border-navy/10 p-4 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full aspect-[4/3] bg-[#F7F4EE] border-b border-navy/20 p-4 flex items-center justify-center overflow-hidden">
                   {!hasFailedImage ? (
                     <Image
                       src={apt.image}
@@ -150,7 +237,7 @@ export default function ApartmentTypes() {
                     />
                   ) : (
                     /* Architectural Blueprint Spec Fallback */
-                    <div className="flex flex-col items-center justify-center text-center p-4 gap-2 w-full h-full border border-dashed border-navy/20 bg-[#FAF7F2]">
+                    <div className="flex flex-col items-center justify-center text-center p-4 gap-2 w-full h-full border border-dashed border-navy/25 rounded-xs bg-[#FAF7F2]">
                       <span className="font-switzer font-medium text-[11px] text-navy/80 tracking-[0.22em] uppercase">
                         {apt.name}
                       </span>
@@ -161,7 +248,7 @@ export default function ApartmentTypes() {
                   )}
 
                   {/* Gross Area Spec Badge */}
-                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 border border-navy/15 font-switzer font-semibold text-xs tracking-wide text-navy shadow-none">
+                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 border border-navy/25 font-switzer font-semibold text-xs tracking-wide text-navy shadow-none">
                     {apt.grossArea}
                   </div>
                 </div>
@@ -232,7 +319,7 @@ export default function ApartmentTypes() {
             {/* ─── EDITORIAL SPREAD TOP HEADER ───────────────────────────── */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-navy/15 pr-12">
               <div className="flex flex-col gap-2">
-                {/* Category & Accent Tag */}
+                {/* Category Tag */}
                 <div className="flex items-center gap-3">
                   <span className="w-6 h-px bg-gold" />
                   <span className="font-switzer font-medium text-xs tracking-[0.25em] uppercase text-gold">
@@ -309,33 +396,19 @@ export default function ApartmentTypes() {
                   </span>
                 </div>
 
-                {/* Room Breakdown List with Flamingo Accent on Largest Space */}
+                {/* Room Breakdown List */}
                 <div className="flex flex-col gap-1">
-                  {selectedApartment.netRooms.map((room, idx) => {
-                    const isLargest = idx === getLargestRoomIndex(selectedApartment.netRooms);
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-center justify-between py-2 text-xs sm:text-sm transition-colors ${
-                          isLargest
-                            ? "border-l-2 border-[#E8836F] bg-[#E8836F]/5 pl-3 pr-2 font-medium"
-                            : "pl-1 pr-1 border-b border-navy/5"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 text-navy">
-                          <span>{room.label}</span>
-                          {isLargest && (
-                            <span className="text-[9px] font-switzer font-semibold uppercase tracking-wider text-[#E8836F] bg-[#E8836F]/10 px-1.5 py-0.5">
-                              EN GENİŞ ALAN
-                            </span>
-                          )}
-                        </div>
-                        <span className="font-switzer font-semibold text-navy tabular-nums">
-                          {room.area}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  {selectedApartment.netRooms.map((room, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between py-2 text-xs sm:text-sm border-b border-navy/5 px-1"
+                    >
+                      <span className="font-switzer font-light text-navy">{room.label}</span>
+                      <span className="font-switzer font-semibold text-navy tabular-nums">
+                        {room.area}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Bolder Summary Line */}
