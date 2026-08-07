@@ -7,6 +7,7 @@ import {
   APARTMENT_TYPES,
   ApartmentCategory,
   ApartmentType,
+  NetRoom,
 } from "@/content/apartmentTypes";
 
 export default function ApartmentTypes() {
@@ -62,34 +63,48 @@ export default function ApartmentTypes() {
     return total.toFixed(2) + " m²";
   };
 
-  return (
-    <section className="w-full bg-cream px-4 sm:px-8 md:px-12 py-20 border-t border-navy/10 flex flex-col items-center">
-      <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
-        {/* ─── SECTION INTRO ────────────────────────────────────────────── */}
-        <div className="max-w-2xl w-full mx-auto text-center flex flex-col items-center gap-4 mb-12">
-          {/* Eyebrow */}
-          <div className="flex items-center justify-center gap-4">
-            <div className="w-6 h-px bg-gold/60" />
-            <span className="font-switzer font-medium text-[10px] sm:text-xs tracking-[0.28em] uppercase text-gold">
-              DAİRE TİPLERİ
-            </span>
-            <div className="w-6 h-px bg-gold/60" />
-          </div>
+  // Helper: Find index of largest room in netRooms for editorial focal point
+  const getLargestRoomIndex = (rooms: NetRoom[]): number => {
+    let maxVal = -1;
+    let maxIdx = 0;
+    rooms.forEach((room, idx) => {
+      const val = parseFloat(room.area.replace(" m²", "").replace(",", "."));
+      if (!isNaN(val) && val > maxVal) {
+        maxVal = val;
+        maxIdx = idx;
+      }
+    });
+    return maxIdx;
+  };
 
-          {/* Headline */}
-          <h2 className="font-switzer font-light text-3xl sm:text-4xl md:text-5xl tracking-tight text-navy leading-snug">
-            Size Uygun Daireyi Bulun
+  return (
+    <section className="w-full bg-cream px-4 sm:px-8 md:px-12 pt-20 pb-16 select-none">
+      <div className="max-w-7xl w-full mx-auto">
+        {/* ─── EDITORIAL MAGAZINE SECTION HEADER ──────────────────────── */}
+        <div className="flex flex-col gap-3.5 mb-14 max-w-2xl text-left">
+          {/* Quiet minimal label */}
+          <span className="font-switzer font-medium text-xs tracking-[0.25em] uppercase text-gold">
+            DAİRE TİPLERİ
+          </span>
+
+          {/* Confident Large Headline with Flamingo Accent */}
+          <h2 className="font-switzer font-light text-4xl sm:text-5xl md:text-6xl text-navy leading-[1.1] tracking-tight">
+            Size Uygun{" "}
+            <span className="relative inline-block font-normal">
+              Daireyi
+              <span className="absolute bottom-1.5 left-0 right-0 h-[3px] bg-[#E8836F]" />
+            </span>{" "}
+            Bulun
           </h2>
 
-          {/* Description */}
-          <p className="font-switzer font-light text-xs sm:text-sm md:text-base text-navy/60 max-w-lg leading-relaxed">
-            Kat planlarını, metrekareleri ve alan dağılımlarını yakından
-            inceleyin.
+          {/* Connected Subhead */}
+          <p className="font-switzer font-light text-sm sm:text-base text-navy/60 leading-relaxed mt-1">
+            Kat planlarını, metrekarelerini ve alan dağılımlarını inceleyin.
           </p>
         </div>
 
-        {/* ─── CATEGORY TAB PILLS ───────────────────────────────────────── */}
-        <div className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-3.5 mb-12">
+        {/* ─── FLAT ARCHITECTURAL TAB BAR ─────────────────────────────── */}
+        <div className="flex items-center gap-6 sm:gap-10 border-b border-navy/15 mb-10 overflow-x-auto no-scrollbar">
           {APARTMENT_CATEGORIES.map((category) => {
             const isActive = activeCategory === category;
             return (
@@ -97,19 +112,22 @@ export default function ApartmentTypes() {
                 key={category}
                 type="button"
                 onClick={() => setActiveCategory(category)}
-                className={`px-5 py-2.5 rounded-full font-switzer font-medium text-xs sm:text-sm tracking-wider uppercase transition-all duration-300 focus:outline-none cursor-pointer ${
+                className={`pb-3.5 font-switzer text-xs sm:text-sm tracking-[0.22em] uppercase transition-all whitespace-nowrap cursor-pointer relative ${
                   isActive
-                    ? "bg-navy text-white shadow-md ring-2 ring-gold/50 scale-105"
-                    : "bg-cream/80 text-navy/75 border border-navy/20 hover:border-navy hover:text-navy hover:bg-cream"
+                    ? "font-semibold text-navy"
+                    : "font-light text-navy/40 hover:text-navy/80"
                 }`}
               >
                 {category}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-navy" />
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* ─── APARTMENT CARDS GRID ─────────────────────────────────────── */}
+        {/* ─── ARCHITECTURAL SPEC CARDS GRID ───────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
           {filteredTypes.map((apt) => {
             const hasFailedImage = failedImages[apt.id];
@@ -118,86 +136,69 @@ export default function ApartmentTypes() {
               <div
                 key={apt.id}
                 onClick={() => setSelectedApartment(apt)}
-                className="group relative rounded-2xl bg-white/70 backdrop-blur-xs border border-navy/10 hover:border-gold/60 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden cursor-pointer"
+                className="group relative rounded-none bg-white border border-navy/15 hover:border-navy/50 transition-all duration-200 hover:-translate-y-0.5 flex flex-col cursor-pointer overflow-hidden shadow-none"
               >
-                {/* Card Thumbnail / Blueprint Placeholder */}
-                <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-[#eae3d9] via-[#f2ece3] to-[#e6ded3] overflow-hidden flex items-center justify-center p-4 border-b border-navy/5">
+                {/* Card Top: Flat Light Panel */}
+                <div className="relative w-full aspect-[4/3] bg-[#F7F4EE] border-b border-navy/10 p-4 flex items-center justify-center overflow-hidden">
                   {!hasFailedImage ? (
                     <Image
                       src={apt.image}
                       alt={apt.name}
                       fill
-                      className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                      className="object-contain p-3 group-hover:scale-[1.02] transition-transform duration-300"
                       onError={() => handleImageError(apt.id)}
                     />
                   ) : (
-                    /* Elegant Blueprint Spec Card Fallback if image file is missing */
-                    <div className="flex flex-col items-center justify-center text-center p-4 gap-2">
-                      <div className="w-12 h-12 rounded-xl bg-navy/5 border border-navy/10 flex items-center justify-center text-navy/60 group-hover:text-navy group-hover:bg-gold/10 group-hover:border-gold/30 transition-colors">
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12"
-                          />
-                        </svg>
-                      </div>
-                      <span className="font-switzer font-medium text-xs text-navy/70 tracking-wider uppercase">
-                        KAT PLANI
+                    /* Architectural Blueprint Spec Fallback */
+                    <div className="flex flex-col items-center justify-center text-center p-4 gap-2 w-full h-full border border-dashed border-navy/20 bg-[#FAF7F2]">
+                      <span className="font-switzer font-medium text-[11px] text-navy/80 tracking-[0.22em] uppercase">
+                        {apt.name}
                       </span>
-                      <span className="font-switzer font-light text-[10px] text-navy/40">
-                        Detay için tıklayın
+                      <span className="font-switzer font-light text-[10px] text-navy/40 tracking-wider">
+                        MİMARİ KAT PLANI
                       </span>
                     </div>
                   )}
 
-                  {/* Gross m² Badge Overlay */}
-                  <div
-                    className="absolute top-3 right-3 px-2.5 py-1 rounded-lg font-switzer font-semibold text-xs tracking-wide text-navy"
-                    style={{
-                      background: "rgba(245, 239, 230, 0.90)",
-                      backdropFilter: "blur(8px)",
-                      border: "1px solid rgba(31, 58, 95, 0.12)",
-                    }}
-                  >
+                  {/* Gross Area Spec Badge */}
+                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 border border-navy/15 font-switzer font-semibold text-xs tracking-wide text-navy shadow-none">
                     {apt.grossArea}
                   </div>
                 </div>
 
-                {/* Card Info Content */}
-                <div className="p-5 flex flex-col flex-1 justify-between gap-4">
+                {/* Card Bottom: Editorial Spec Metadata */}
+                <div className="p-5 flex flex-col justify-between flex-1 gap-4 bg-white">
                   <div>
-                    {/* Apartment Name */}
-                    <h3 className="font-switzer font-semibold text-lg text-navy group-hover:text-gold transition-colors duration-200">
-                      {apt.name}
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-switzer font-medium text-lg text-navy">
+                        {apt.name}
+                      </h3>
+                      <span className="font-switzer font-light text-xs text-navy/50">
+                        {apt.grossArea}
+                      </span>
+                    </div>
 
-                    {/* Metadata Line */}
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-navy/5 font-switzer font-medium text-[11px] text-navy/70">
-                        {apt.block}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-navy/5 font-switzer font-medium text-[11px] text-navy/70">
-                        {apt.floor}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-gold/15 text-navy font-switzer font-medium text-[11px]">
-                        {apt.count}
-                      </span>
+                    {/* Quieter Architectural Spec Lines */}
+                    <div className="mt-3 pt-3 border-t border-navy/10 flex flex-col gap-1 text-[11px] font-switzer font-light text-navy/60">
+                      <div className="flex items-center justify-between">
+                        <span className="uppercase tracking-wider text-navy/40 text-[10px]">Blok</span>
+                        <span className="font-medium text-navy/80">{apt.block}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="uppercase tracking-wider text-navy/40 text-[10px]">Kat</span>
+                        <span className="font-medium text-navy/80">{apt.floor}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="uppercase tracking-wider text-navy/40 text-[10px]">Adet</span>
+                        <span className="font-medium text-navy/80">{apt.count}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Card Bottom CTA */}
-                  <div className="flex items-center justify-between pt-3 border-t border-navy/5 text-xs font-switzer font-medium text-navy/60 group-hover:text-navy transition-colors">
-                    <span>Kat Planı & Net Alan</span>
-                    <span className="group-hover:translate-x-1 transition-transform duration-200 text-gold font-bold">
-                      İncele →
-                    </span>
+                  {/* Action Row */}
+                  <div className="pt-3 border-t border-navy/10 flex items-center justify-between text-[11px] font-switzer font-medium tracking-[0.18em] uppercase text-gold">
+                    <span>İncele</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
                   </div>
                 </div>
               </div>
@@ -206,81 +207,75 @@ export default function ApartmentTypes() {
         </div>
       </div>
 
-      {/* ─── APARTMENT DETAIL MODAL ─────────────────────────────────────── */}
+      {/* ─── MAGAZINE-SPREAD ARCHITECTURAL DETAIL MODAL ─────────────────── */}
       {selectedApartment && (
         <div
           onClick={() => setSelectedApartment(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-navy/70 backdrop-blur-md animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-navy/70 backdrop-blur-xs animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-5xl max-h-[90vh] rounded-3xl bg-cream border border-gold/40 shadow-2xl overflow-y-auto flex flex-col p-6 sm:p-8 md:p-10 animate-in zoom-in-95 duration-200"
+            className="relative w-full max-w-6xl max-h-[92vh] rounded-none bg-[#FDFBF7] text-navy border border-navy/20 shadow-2xl overflow-y-auto p-6 sm:p-10 md:p-12 flex flex-col gap-8 animate-in zoom-in-95 duration-200"
           >
-            {/* Modal Close Button */}
+            {/* Minimal Close Button */}
             <button
               type="button"
               onClick={() => setSelectedApartment(null)}
               aria-label="Kapat"
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-9 h-9 flex items-center justify-center rounded-full bg-navy/5 text-navy/60 hover:text-navy hover:bg-navy/10 transition-colors focus:outline-none cursor-pointer z-10"
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-9 h-9 flex items-center justify-center border border-navy/15 text-navy/60 hover:text-navy hover:bg-navy/5 transition-colors focus:outline-none cursor-pointer z-20"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            {/* Modal Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-navy/10 pr-10">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="w-2 h-2 rounded-full bg-gold" />
-                  <span className="font-switzer font-medium text-[11px] tracking-[0.2em] uppercase text-gold">
-                    {selectedApartment.category} KAT PLANI DETAYLARI
+            {/* ─── EDITORIAL SPREAD TOP HEADER ───────────────────────────── */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-navy/15 pr-12">
+              <div className="flex flex-col gap-2">
+                {/* Category & Accent Tag */}
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-px bg-gold" />
+                  <span className="font-switzer font-medium text-xs tracking-[0.25em] uppercase text-gold">
+                    {selectedApartment.category}
                   </span>
                 </div>
-                <h3 className="font-switzer font-semibold text-2xl sm:text-3xl text-navy">
+
+                {/* Large Hero Title */}
+                <h3 className="font-switzer font-light text-4xl sm:text-5xl md:text-6xl text-navy tracking-tight leading-none">
                   {selectedApartment.name}
                 </h3>
+
+                {/* Single Quiet Inline Meta Line */}
+                <p className="font-switzer font-light text-xs sm:text-sm text-navy/65 mt-1.5 flex items-center gap-2">
+                  <span>{selectedApartment.block}</span>
+                  <span className="text-gold">&middot;</span>
+                  <span>{selectedApartment.floor}</span>
+                  <span className="text-gold">&middot;</span>
+                  <span className="font-medium text-navy/90">{selectedApartment.count}</span>
+                </p>
               </div>
 
-              {/* Gross m² Highlight */}
-              <div className="flex flex-col sm:items-end">
-                <span className="font-switzer font-light text-xs text-navy/60 uppercase tracking-wider">
+              {/* Big Editorial m² Typography */}
+              <div className="flex flex-col md:items-end gap-0.5">
+                <span className="font-switzer font-light text-[10px] sm:text-xs text-navy/40 uppercase tracking-[0.2em]">
                   BRÜT ALAN
                 </span>
-                <span className="font-switzer font-bold text-2xl sm:text-3xl text-navy">
-                  {selectedApartment.grossArea}
-                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-cinzel font-bold text-4xl sm:text-5xl md:text-6xl text-navy tracking-tight">
+                    {selectedApartment.grossArea.replace(" m²", "")}
+                  </span>
+                  <span className="font-switzer font-medium text-lg sm:text-xl text-gold">
+                    m²
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Meta Tags Bar */}
-            <div className="flex flex-wrap items-center gap-2 py-4 border-b border-navy/5 mb-6">
-              <span className="px-3 py-1 rounded-lg bg-navy/5 font-switzer font-medium text-xs text-navy">
-                Blok: <strong className="text-navy">{selectedApartment.block}</strong>
-              </span>
-              <span className="px-3 py-1 rounded-lg bg-navy/5 font-switzer font-medium text-xs text-navy">
-                Kat: <strong className="text-navy">{selectedApartment.floor}</strong>
-              </span>
-              <span className="px-3 py-1 rounded-lg bg-gold/15 font-switzer font-medium text-xs text-navy">
-                Toplam Adet: <strong className="text-navy">{selectedApartment.count}</strong>
-              </span>
-            </div>
-
-            {/* Modal Body: 2 Columns (Plan Image + Net Area Breakdown Spec List) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Floor Plan View (7 cols) */}
-              <div className="lg:col-span-7 flex flex-col items-center">
-                <div className="relative w-full aspect-[4/3] rounded-2xl bg-gradient-to-br from-[#eae3d9] via-[#f2ece3] to-[#e6ded3] border border-navy/10 p-4 flex items-center justify-center overflow-hidden">
+            {/* ─── EDITORIAL TWO-COLUMN SPREAD (60% Plan / 40% Spec Info) ──── */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-start">
+              {/* LEFT: Dominant Floor-Plan Viewer (7 Cols ~ 58%) */}
+              <div className="lg:col-span-7 flex flex-col w-full">
+                <div className="relative w-full aspect-[4/3] bg-[#F4F0E8] border border-navy/15 p-4 sm:p-6 flex items-center justify-center overflow-hidden rounded-none">
                   {!failedImages[selectedApartment.id] ? (
                     <Image
                       src={selectedApartment.image}
@@ -290,68 +285,73 @@ export default function ApartmentTypes() {
                       onError={() => handleImageError(selectedApartment.id)}
                     />
                   ) : (
-                    /* Large Blueprint Spec Fallback */
-                    <div className="flex flex-col items-center justify-center text-center p-6 gap-3">
-                      <div className="w-16 h-16 rounded-2xl bg-navy/5 border border-navy/10 flex items-center justify-center text-navy/50">
-                        <svg
-                          className="w-8 h-8"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12"
-                          />
-                        </svg>
-                      </div>
-                      <div className="font-switzer font-medium text-sm text-navy">
-                        {selectedApartment.name} Mimari Kat Planı
-                      </div>
-                      <p className="font-switzer font-light text-xs text-navy/50 max-w-xs">
-                        Görsel hazırlanıyor. Aşağıdaki listeden net alan
-                        dağılımını inceleyebilirsiniz.
-                      </p>
+                    <div className="flex flex-col items-center justify-center text-center p-6 gap-3 w-full h-full border border-dashed border-navy/20 bg-[#F8F5EE]">
+                      <span className="font-switzer font-medium text-sm text-navy tracking-[0.25em] uppercase">
+                        {selectedApartment.name}
+                      </span>
+                      <span className="font-switzer font-light text-xs text-navy/50 tracking-wider">
+                        MİMARİ KAT PLANI GÖRSELİ
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Right Column: Net Area Breakdown Spec Sheet (5 cols) */}
-              <div className="lg:col-span-5 flex flex-col gap-4">
-                <div className="flex items-center justify-between pb-2 border-b border-gold/40">
-                  <span className="font-switzer font-medium text-xs tracking-[0.2em] uppercase text-gold">
+              {/* RIGHT: Left-Aligned Editorial Spec Info Stack (5 Cols ~ 42%) */}
+              <div className="lg:col-span-5 flex flex-col gap-5 w-full text-left">
+                {/* Section Heading */}
+                <div className="flex items-center justify-between pb-3 border-b border-navy/15">
+                  <span className="font-switzer font-medium text-xs tracking-[0.25em] uppercase text-navy">
                     NET ALAN DAĞILIMI
                   </span>
-                  <span className="font-switzer font-semibold text-xs text-navy/70">
-                    SÜPÜRÜLEBİLİR NET: {calculateTotalNet(selectedApartment)}
+                  <span className="font-switzer font-light text-[11px] uppercase tracking-wider text-navy/50">
+                    [ ODALAR ]
                   </span>
                 </div>
 
-                {/* Itemized Room List */}
-                <div className="flex flex-col gap-2.5 my-1">
-                  {selectedApartment.netRooms.map((room, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between text-xs sm:text-sm py-1.5 border-b border-navy/5 hover:bg-navy/5 px-2 rounded transition-colors"
-                    >
-                      <div className="flex items-center gap-2 text-navy/85 font-switzer font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gold/70" />
-                        <span>{room.label}</span>
+                {/* Room Breakdown List with Flamingo Accent on Largest Space */}
+                <div className="flex flex-col gap-1">
+                  {selectedApartment.netRooms.map((room, idx) => {
+                    const isLargest = idx === getLargestRoomIndex(selectedApartment.netRooms);
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between py-2 text-xs sm:text-sm transition-colors ${
+                          isLargest
+                            ? "border-l-2 border-[#E8836F] bg-[#E8836F]/5 pl-3 pr-2 font-medium"
+                            : "pl-1 pr-1 border-b border-navy/5"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 text-navy">
+                          <span>{room.label}</span>
+                          {isLargest && (
+                            <span className="text-[9px] font-switzer font-semibold uppercase tracking-wider text-[#E8836F] bg-[#E8836F]/10 px-1.5 py-0.5">
+                              EN GENİŞ ALAN
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-switzer font-semibold text-navy tabular-nums">
+                          {room.area}
+                        </span>
                       </div>
-                      <span className="font-switzer font-semibold text-navy">
-                        {room.area}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                <div className="p-4 rounded-xl bg-navy/5 border border-navy/10 text-[11px] font-switzer font-light text-navy/60 leading-relaxed mt-2">
-                  * Belirtilen metrekareler yaklaşık değerler olup mimari
-                  projedeki nihai imalat durumuna göre değişiklik gösterebilir.
+                {/* Bolder Summary Line */}
+                <div className="pt-4 border-t border-navy/20 flex items-center justify-between">
+                  <span className="font-switzer font-medium text-xs tracking-[0.18em] uppercase text-navy">
+                    TOPLAM SÜPÜRÜLEBİLİR NET
+                  </span>
+                  <span className="font-cinzel font-bold text-lg text-gold">
+                    {calculateTotalNet(selectedApartment)}
+                  </span>
                 </div>
+
+                {/* Quiet Disclaimer */}
+                <p className="text-[10px] font-switzer font-light text-navy/40 leading-relaxed pt-2">
+                  * Belirtilen metrekareler yaklaşık değerler olup mimari projedeki nihai imalat durumuna göre değişiklik gösterebilir.
+                </p>
               </div>
             </div>
           </div>
