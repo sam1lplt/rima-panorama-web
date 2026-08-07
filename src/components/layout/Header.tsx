@@ -7,6 +7,7 @@ import Link from "next/link";
 const navLinksLeft = [
   { name: "Karataş'ta Yaşam", href: "#" },
   { name: "Sosyal İmkanlar", href: "#" },
+  { name: "Vaziyet Planı", href: "/plan" },
 ];
 
 const navLinksRight = [
@@ -100,12 +101,12 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-8 md:px-12 w-full grid grid-cols-3 items-center">
           {/* LEFT ZONE: Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-8 lg:gap-10 justify-start">
+          <nav className="hidden md:flex items-center gap-5 lg:gap-7 justify-start">
             {navLinksLeft.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`font-switzer font-medium text-xs lg:text-sm tracking-[0.14em] uppercase transition-all duration-300 ${
+                className={`font-switzer font-medium text-[11px] lg:text-xs tracking-[0.10em] lg:tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-300 ${
                   isScrolled
                     ? "text-navy/85 hover:text-navy [text-shadow:none]"
                     : "text-white hover:text-white/90 [text-shadow:0_2px_14px_rgba(0,0,0,0.85),0_1px_4px_rgba(0,0,0,0.9)]"
@@ -121,7 +122,7 @@ export default function Header() {
 
           {/* CENTER ZONE: Centered Focal Logo */}
           <div className="flex items-center justify-center">
-            <Link href="#" className="relative group inline-block">
+            <Link href="/" className="relative group inline-block">
               <div className="relative w-24 h-12 sm:w-28 sm:h-14 md:w-32 md:h-16 lg:w-36 lg:h-18 transition-transform duration-300 group-hover:scale-105">
                 <Image
                   src={isScrolled ? "/images/logo-dark.png" : "/images/logo.png"}
@@ -140,12 +141,12 @@ export default function Header() {
 
           {/* RIGHT ZONE: Navigation Links (Desktop) or Mobile Hamburger */}
           <div className="flex items-center justify-end">
-            <nav className="hidden md:flex items-center gap-8 lg:gap-10 justify-end">
+            <nav className="hidden md:flex items-center gap-5 lg:gap-7 justify-end">
               {navLinksRight.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`font-switzer font-medium text-xs lg:text-sm tracking-[0.14em] uppercase transition-all duration-300 ${
+                  className={`font-switzer font-medium text-[11px] lg:text-xs tracking-[0.10em] lg:tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-300 ${
                     isScrolled
                       ? "text-navy/85 hover:text-navy [text-shadow:none]"
                       : "text-white hover:text-white/90 [text-shadow:0_2px_14px_rgba(0,0,0,0.85),0_1px_4px_rgba(0,0,0,0.9)]"
