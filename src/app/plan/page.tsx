@@ -2,16 +2,18 @@ import type { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import PlanIntro from "@/components/sections/PlanIntro";
 import SitePlanViewer from "@/components/sections/SitePlanViewer";
+import ApartmentTypes from "@/components/sections/ApartmentTypes";
 
 export const metadata: Metadata = {
-  title: "Vaziyet Planı — Rima Panorama",
+  title: "Vaziyet Planı & Daire Tipleri — Rima Panorama",
   description:
-    "Rima Panorama projesinin vaziyet planını keşfedin. Blokları, sosyal alanları ve site düzenini yakınlaştırarak inceleyin.",
+    "Rima Panorama projesinin vaziyet planını ve 1+1, 2+1, 3+1 ve 4+1 dubleks daire tiplerini inceleyin. Kat planları, metrekareler ve net alan dağılımları.",
   keywords: [
     "Rima Panorama vaziyet planı",
     "Karataş site planı",
-    "Rima Panorama bloklar",
-    "Adana konut projesi planı",
+    "Rima Panorama daire tipleri",
+    "Karataş 1+1 2+1 3+1 daireler",
+    "Adana konut projesi kat planları",
   ],
 };
 
@@ -21,6 +23,7 @@ export default function PlanPage() {
       <Header />
       <PlanIntro />
       <SitePlanViewer />
+      <ApartmentTypes />
     </main>
   );
 }
